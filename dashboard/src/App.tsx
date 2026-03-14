@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import OverviewPage from './pages/OverviewPage';
 import PatientDetailPage from './pages/PatientDetailPage';
+import RegisterPage from './pages/RegisterPage';
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
 
         {/* Protected — all dashboard routes sit inside ProtectedRoute */}
         <Route element={<ProtectedRoute />}>

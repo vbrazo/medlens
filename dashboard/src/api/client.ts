@@ -37,12 +37,24 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export type RegisterResponse = {
+  id: string;
+  email: string;
+  role: string;
+  created_at: string;
+};
+
 export const api = {
   auth: {
     login: (email: string, password: string) =>
       req<{access_token: string}>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({email, password}),
+      }),
+    register: (email: string, password: string, role: string = 'patient') =>
+      req<RegisterResponse>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({email, password, role}),
       }),
   },
 

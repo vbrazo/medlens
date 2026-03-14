@@ -38,6 +38,13 @@ class TestRegister:
         )
         assert res.status_code == 422
 
+    async def test_register_short_password_returns_422(self, async_client: AsyncClient):
+        res = await async_client.post(
+            "/auth/register",
+            json={"email": "short@test.com", "password": "short"},
+        )
+        assert res.status_code == 422
+
 
 class TestLogin:
     async def test_login_success(self, async_client: AsyncClient):
