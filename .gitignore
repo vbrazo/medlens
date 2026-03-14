@@ -1,0 +1,48 @@
+# Cache
+.cache/
+*.cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+*.egg-info/
+*.egg
+
+# Virtual envs
+venv/
+.venv/
+path/
+env/
+
+# Node
+node_modules/
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Env (keep .env.example)
+.env
+.env.local
+!.env.example
+!.env.development
+
+# Logs
+*.log
+npm-debug.log*
