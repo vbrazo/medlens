@@ -1,0 +1,5 @@
+rootProject.name = 'MedLens'
+apply from: file("../mobile/node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+applyNativeModulesSettingsGradle(settings)
+include ':app'
+includeBuild('../mobile/node_modules/@react-native/gradle-plugin')
