@@ -21,20 +21,18 @@ export default function LoginPage() {
 
     try {
       if (USE_MOCK) {
-        // In mock mode: accept any non-empty credentials; derive role from email
+        // Mock: accept any credentials; role is not from DB — use real API to test admin/patient
         await new Promise(r => setTimeout(r, 400));
-        const role: UserRole = email.toLowerCase().includes('admin') ? 'admin' : 'patient';
-        login('mock-token', role);
+        login('mock-token', 'patient');
       } else {
         const {access_token} = await api.auth.login(email, password);
-        // Store token first so the /users/me request is authenticated
+        // Store token first so /users/me is authenticated
         login(access_token, 'patient');
-        // Fetch the current user to get their actual role
         try {
           const me = await api.users.me();
           setRole(me.role as UserRole);
         } catch {
-          // If /users/me fails we keep the default role; non-critical
+          // If /users/me fails we keep default role
         }
       }
       navigate('/overview', {replace: true});
