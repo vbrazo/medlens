@@ -4,6 +4,9 @@ import type {
   AdherenceMetrics,
   OverviewStats,
   DailyPoint,
+  PaginatedResponse,
+  UserCreatePayload,
+  UserUpdatePayload,
 } from '../types';
 
 const BASE = import.meta.env.VITE_API_URL ?? '/api';
@@ -31,6 +34,9 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     window.location.replace('/login');
   }
 
+  // 204 No Content — return undefined without trying to parse JSON
+  if (res.status === 204) return undefined as T;
+
   if (!res.ok) {
     throw new Error(`${res.status} ${await res.text()}`);
   }
@@ -43,6 +49,8 @@ export type RegisterResponse = {
   role: string;
   created_at: string;
 };
+
+export type UserResponse = RegisterResponse;
 
 export const api = {
   auth: {
@@ -59,8 +67,27 @@ export const api = {
   },
 
   patients: {
-    list: () => req<PatientSummary[]>('/users'),
+    /** Paginated list — the primary endpoint for patient management. */
+    paginated: (page: number, pageSize: number) =>
+      req<PaginatedResponse<PatientSummary>>(
+        `/users?page=${page}&page_size=${pageSize}`,
+      ),
+    /** Single patient summary. */
     get: (id: string) => req<PatientSummary>(`/users/${id}`),
+    /** Admin: create a new user. */
+    create: (payload: UserCreatePayload) =>
+      req<UserResponse>('/users', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    /** Admin: update email / role / password. */
+    update: (id: string, payload: UserUpdatePayload) =>
+      req<UserResponse>(`/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      }),
+    /** Admin: delete a patient. Returns void (204). */
+    delete: (id: string) => req<void>(`/users/${id}`, {method: 'DELETE'}),
   },
 
   logs: {

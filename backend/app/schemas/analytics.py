@@ -30,3 +30,11 @@ class PatientSummaryResponse(BaseModel):
     adherence_rate: float
     missed_doses: int
     last_scan: str | None  # ISO string
+
+
+class PaginatedPatients(BaseModel):
+    items: list[PatientSummaryResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int

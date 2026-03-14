@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import OverviewPage from './pages/OverviewPage';
 import PatientDetailPage from './pages/PatientDetailPage';
+import PatientsPage from './pages/PatientsPage';
 import RegisterPage from './pages/RegisterPage';
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<Navigate to="/overview" replace />} />
             <Route path="overview" element={<OverviewPage />} />
+            <Route path="patients" element={<PatientsPage />} />
             <Route path="patients/:id" element={<PatientDetailPage />} />
           </Route>
         </Route>

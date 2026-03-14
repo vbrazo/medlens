@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -26,3 +27,19 @@ class UserResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ── Admin patient management ──────────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    """Admin-only: create a new user with explicit role."""
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    role: Literal["patient", "admin"] = "patient"
+
+
+class UserUpdate(BaseModel):
+    """Admin-only: partial update — all fields are optional."""
+    email: EmailStr | None = None
+    password: str | None = Field(default=None, min_length=8)
+    role: Literal["patient", "admin"] | None = None

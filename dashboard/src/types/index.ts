@@ -42,3 +42,23 @@ export interface OverviewStats {
   avg_adherence: number;
   total_missed: number;
 }
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
+}
+
+export interface UserCreatePayload {
+  email: string;
+  password: string;
+  role: 'patient' | 'admin';
+}
+
+export interface UserUpdatePayload {
+  email?: string;
+  password?: string;
+  role?: 'patient' | 'admin';
+}
