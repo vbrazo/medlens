@@ -1,25 +1,7 @@
 import StatCard from '../components/StatCard';
 import AdherenceChart from '../components/AdherenceChart';
 import ScanBarChart from '../components/ScanBarChart';
-import PatientTable from '../components/PatientTable';
 import {useOverviewStats, useWeeklyTrend} from '../hooks/useOverview';
-import {usePatients} from '../hooks/usePatients';
-
-function SectionTitle({children}: {children: React.ReactNode}) {
-  return (
-    <h2
-      style={{
-        fontSize: 14,
-        fontWeight: 700,
-        color: 'var(--text-secondary)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.06em',
-        marginBottom: 16,
-      }}>
-      {children}
-    </h2>
-  );
-}
 
 function ChartCard({title, children}: {title: string; children: React.ReactNode}) {
   return (
@@ -47,11 +29,9 @@ function ChartCard({title, children}: {title: string; children: React.ReactNode}
 export default function OverviewPage() {
   const stats = useOverviewStats();
   const weekly = useWeeklyTrend();
-  const patients = usePatients();
 
   const s = stats.data;
   const w = weekly.data ?? [];
-  const p = patients.data ?? [];
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 1100}}>
@@ -115,16 +95,6 @@ export default function OverviewPage() {
             <ScanBarChart data={w} />
           )}
         </ChartCard>
-      </div>
-
-      {/* Patient table */}
-      <div>
-        <SectionTitle>Patients</SectionTitle>
-        {patients.isLoading ? (
-          <Skeleton height={300} />
-        ) : (
-          <PatientTable patients={p} />
-        )}
       </div>
     </div>
   );

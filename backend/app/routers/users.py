@@ -1,5 +1,6 @@
 import math
 from datetime import datetime, timedelta
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, func, select
@@ -18,20 +19,20 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 # ── Internal helper ───────────────────────────────────────────────────────────
 
-async def _patient_summary(db: AsyncSession, patient: User) -> PatientSummaryResponse:
-    """Compute per-patient adherence stats for the trailing 7-day window."""
+async def _user_summary(db: AsyncSession, user: User) -> PatientSummaryResponse:
+    """Compute per-user adherence stats for the trailing 7-day window."""
     since = datetime.utcnow() - timedelta(days=7)
 
     total = (
         await db.scalar(
-            select(func.count(MedicationLog.id)).where(MedicationLog.user_id == patient.id)
+            select(func.count(MedicationLog.id)).where(MedicationLog.user_id == user.id)
         )
     ) or 0
 
     week_total = (
         await db.scalar(
             select(func.count(MedicationLog.id)).where(
-                and_(MedicationLog.user_id == patient.id, MedicationLog.timestamp >= since)
+                and_(MedicationLog.user_id == user.id, MedicationLog.timestamp >= since)
             )
         )
     ) or 0
@@ -40,7 +41,7 @@ async def _patient_summary(db: AsyncSession, patient: User) -> PatientSummaryRes
         await db.scalar(
             select(func.count(MedicationLog.id)).where(
                 and_(
-                    MedicationLog.user_id == patient.id,
+                    MedicationLog.user_id == user.id,
                     MedicationLog.timestamp >= since,
                     MedicationLog.verified.is_(True),
                 )
@@ -49,13 +50,13 @@ async def _patient_summary(db: AsyncSession, patient: User) -> PatientSummaryRes
     ) or 0
 
     last = await db.scalar(
-        select(func.max(MedicationLog.timestamp)).where(MedicationLog.user_id == patient.id)
+        select(func.max(MedicationLog.timestamp)).where(MedicationLog.user_id == user.id)
     )
 
     return PatientSummaryResponse(
-        id=patient.id,
-        email=patient.email,
-        role=patient.role,
+        id=user.id,
+        email=user.email,
+        role=user.role,
         total_scans=total,
         adherence_rate=round(verified / week_total, 2) if week_total else 0.0,
         missed_doses=week_total - verified,
@@ -71,27 +72,29 @@ async def me(current_user: User = Depends(get_current_user)):
 
 
 @router.get("", response_model=PaginatedPatients)
-async def list_patients(
+async def list_users(
     page: int = Query(1, ge=1, description="Page number (1-based)"),
     page_size: int = Query(20, ge=1, le=100, description="Results per page (max 100)"),
+    role: Literal["patient", "admin"] = Query("patient", description="Filter by role"),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
+    """List users filtered by role. Defaults to 'patient' for backward compatibility."""
     offset = (page - 1) * page_size
 
     total = (
-        await db.scalar(select(func.count(User.id)).where(User.role == "patient"))
+        await db.scalar(select(func.count(User.id)).where(User.role == role))
     ) or 0
 
     result = await db.execute(
         select(User)
-        .where(User.role == "patient")
+        .where(User.role == role)
         .order_by(User.created_at.desc())
         .offset(offset)
         .limit(page_size)
     )
-    patients = result.scalars().all()
-    items = [await _patient_summary(db, p) for p in patients]
+    users = result.scalars().all()
+    items = [await _user_summary(db, u) for u in users]
 
     return PaginatedPatients(
         items=items,
@@ -103,20 +106,20 @@ async def list_patients(
 
 
 @router.get("/{user_id}", response_model=PatientSummaryResponse)
-async def get_patient(
+async def get_user(
     user_id: str,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     result = await db.execute(select(User).where(User.id == user_id))
-    patient = result.scalar_one_or_none()
-    if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found")
-    return await _patient_summary(db, patient)
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return await _user_summary(db, user)
 
 
 @router.post("", response_model=UserResponse, status_code=201)
-async def create_patient(
+async def create_user(
     body: UserCreate,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
@@ -137,7 +140,7 @@ async def create_patient(
 
 
 @router.put("/{user_id}", response_model=UserResponse)
-async def update_patient(
+async def update_user(
     user_id: str,
     body: UserUpdate,
     db: AsyncSession = Depends(get_db),
@@ -167,7 +170,7 @@ async def update_patient(
 
 
 @router.delete("/{user_id}", status_code=204)
-async def delete_patient(
+async def delete_user(
     user_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),

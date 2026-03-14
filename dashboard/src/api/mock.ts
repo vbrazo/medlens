@@ -156,6 +156,119 @@ export function mockDeletePatient(id: string): void {
 // Keep backward-compat export used by OverviewPage
 export const mockPatients = getMockPatients();
 
+// ── In-memory admin store (supports CRUD in mock mode) ───────────────────────
+
+const MOCK_ADMINS_KEY = 'medlens_mock_admins';
+
+function defaultAdminStore(): PatientSummary[] {
+  return Array.from({length: 3}, (_, i) => ({
+    id: `admin-${i + 1}`,
+    email: `admin${i + 1}@clinic.example`,
+    role: 'admin' as const,
+    created_at: new Date(Date.now() - i * 86_400_000 * 30).toISOString(),
+    total_scans: 0,
+    adherence_rate: 0,
+    missed_doses: 0,
+    last_scan: null,
+  }));
+}
+
+function loadAdminStore(): PatientSummary[] {
+  if (typeof localStorage === 'undefined') return defaultAdminStore();
+  try {
+    const raw = localStorage.getItem(MOCK_ADMINS_KEY);
+    if (!raw) return defaultAdminStore();
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed) || parsed.length === 0) return defaultAdminStore();
+    const ok = parsed.every(
+      (p: unknown) =>
+        p != null &&
+        typeof p === 'object' &&
+        'id' in p &&
+        'email' in p &&
+        'role' in p &&
+        'created_at' in p,
+    );
+    return ok ? (parsed as PatientSummary[]) : defaultAdminStore();
+  } catch {
+    return defaultAdminStore();
+  }
+}
+
+function saveAdminStore(store: PatientSummary[]): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(MOCK_ADMINS_KEY, JSON.stringify(store));
+  } catch {
+    // ignore quota or other errors
+  }
+}
+
+let _adminStore: PatientSummary[] = loadAdminStore();
+
+/** Retrieve all mock admins (sorted newest-first). */
+export function getMockAdmins(): PatientSummary[] {
+  return [..._adminStore].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+}
+
+/** Paginated slice of the admin mock store. */
+export function getMockAdminsPaginated(
+  page: number,
+  pageSize: number,
+): PaginatedResponse<PatientSummary> {
+  const sorted = getMockAdmins();
+  const total = sorted.length;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const start = (page - 1) * pageSize;
+  return {
+    items: sorted.slice(start, start + pageSize),
+    total,
+    page,
+    page_size: pageSize,
+    pages,
+  };
+}
+
+/** Mock create admin — adds to the in-memory admin store. */
+export function mockCreateAdmin(payload: UserCreatePayload): PatientSummary {
+  const newAdmin: PatientSummary = {
+    id: `mock-admin-${Date.now()}`,
+    email: payload.email,
+    role: 'admin',
+    created_at: new Date().toISOString(),
+    total_scans: 0,
+    adherence_rate: 0,
+    missed_doses: 0,
+    last_scan: null,
+  };
+  _adminStore = [newAdmin, ..._adminStore];
+  saveAdminStore(_adminStore);
+  return newAdmin;
+}
+
+/** Mock update admin — patches matched admin. */
+export function mockUpdateAdmin(id: string, payload: UserUpdatePayload): PatientSummary {
+  _adminStore = _adminStore.map(a =>
+    a.id === id
+      ? {
+          ...a,
+          ...(payload.email ? {email: payload.email} : {}),
+          ...(payload.role ? {role: payload.role} : {}),
+        }
+      : a,
+  );
+  saveAdminStore(_adminStore);
+  return _adminStore.find(a => a.id === id)!;
+}
+
+/** Mock delete admin — removes matched admin. */
+export function mockDeleteAdmin(id: string): void {
+  _adminStore = _adminStore.filter(a => a.id !== id);
+  saveAdminStore(_adminStore);
+}
+
 export function mockLogsForPatient(userId: string): MedicationLog[] {
   return Array.from({length: 20}, (_, i) => ({
     id: `log-${userId}-${i}`,

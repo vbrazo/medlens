@@ -1,6 +1,7 @@
 import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminsPage from './pages/AdminsPage';
 import LoginPage from './pages/LoginPage';
 import OverviewPage from './pages/OverviewPage';
 import PatientDetailPage from './pages/PatientDetailPage';
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="overview" element={<OverviewPage />} />
             <Route path="patients" element={<PatientsPage />} />
             <Route path="patients/:id" element={<PatientDetailPage />} />
+            <Route path="admins" element={<AdminsPage />} />
           </Route>
         </Route>
 

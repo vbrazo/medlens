@@ -4,6 +4,8 @@ import type {PatientSummary, UserCreatePayload, UserUpdatePayload} from '../type
 interface PatientModalProps {
   /** Null = create mode; non-null = edit mode with pre-filled data. */
   patient: PatientSummary | null;
+  /** Role pre-selected when creating a new user (default: 'patient'). */
+  defaultRole?: 'patient' | 'admin';
   loading?: boolean;
   error?: string;
   onClose: () => void;
@@ -12,6 +14,7 @@ interface PatientModalProps {
 
 export default function PatientModal({
   patient,
+  defaultRole = 'patient',
   loading = false,
   error,
   onClose,
@@ -22,17 +25,17 @@ export default function PatientModal({
   const [email, setEmail] = useState(patient?.email ?? '');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'patient' | 'admin'>(
-    (patient?.role as 'patient' | 'admin') ?? 'patient',
+    (patient?.role as 'patient' | 'admin') ?? defaultRole,
   );
   const [resetPw, setResetPw] = useState(false);
 
   // Keep fields in sync if the modal is reused for a different patient
   useEffect(() => {
     setEmail(patient?.email ?? '');
-    setRole((patient?.role as 'patient' | 'admin') ?? 'patient');
+    setRole((patient?.role as 'patient' | 'admin') ?? defaultRole);
     setPassword('');
     setResetPw(false);
-  }, [patient?.id]);
+  }, [patient?.id, defaultRole]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();

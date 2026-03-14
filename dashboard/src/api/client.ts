@@ -67,10 +67,10 @@ export const api = {
   },
 
   patients: {
-    /** Paginated list — the primary endpoint for patient management. */
+    /** Paginated list of patients — role=patient filter applied. */
     paginated: (page: number, pageSize: number) =>
       req<PaginatedResponse<PatientSummary>>(
-        `/users?page=${page}&page_size=${pageSize}`,
+        `/users?role=patient&page=${page}&page_size=${pageSize}`,
       ),
     /** Single patient summary. */
     get: (id: string) => req<PatientSummary>(`/users/${id}`),
@@ -87,6 +87,28 @@ export const api = {
         body: JSON.stringify(payload),
       }),
     /** Admin: delete a patient. Returns void (204). */
+    delete: (id: string) => req<void>(`/users/${id}`, {method: 'DELETE'}),
+  },
+
+  admins: {
+    /** Paginated list of admin users — role=admin filter applied. */
+    paginated: (page: number, pageSize: number) =>
+      req<PaginatedResponse<PatientSummary>>(
+        `/users?role=admin&page=${page}&page_size=${pageSize}`,
+      ),
+    /** Admin: create a new admin user. */
+    create: (payload: UserCreatePayload) =>
+      req<UserResponse>('/users', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    /** Admin: update another admin's email / role / password. */
+    update: (id: string, payload: UserUpdatePayload) =>
+      req<UserResponse>(`/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      }),
+    /** Admin: delete an admin user. Returns void (204). */
     delete: (id: string) => req<void>(`/users/${id}`, {method: 'DELETE'}),
   },
 

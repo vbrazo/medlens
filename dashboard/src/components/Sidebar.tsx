@@ -4,6 +4,7 @@ import {useAuth} from '../hooks/useAuth';
 const NAV = [
   {to: '/overview', label: 'Overview', icon: '◈'},
   {to: '/patients', label: 'Patients', icon: '◉'},
+  {to: '/admins', label: 'Admins', icon: '◆'},
 ];
 
 const linkStyle = (active: boolean): React.CSSProperties => ({
