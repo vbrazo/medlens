@@ -66,6 +66,11 @@ export const api = {
       }),
   },
 
+  users: {
+    /** Fetch the currently authenticated user's profile. */
+    me: () => req<UserResponse>('/users/me'),
+  },
+
   patients: {
     /** Paginated list of patients — role=patient filter applied. */
     paginated: (page: number, pageSize: number) =>

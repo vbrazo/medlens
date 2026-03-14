@@ -1,10 +1,10 @@
 import {NavLink, useNavigate} from 'react-router-dom';
 import {useAuth} from '../hooks/useAuth';
 
-const NAV = [
-  {to: '/overview', label: 'Overview', icon: '◈'},
-  {to: '/patients', label: 'Patients', icon: '◉'},
-  {to: '/admins', label: 'Admins', icon: '◆'},
+const NAV_ALL = [
+  {to: '/overview', label: 'Overview', icon: '◈', adminOnly: false},
+  {to: '/patients', label: 'Patients', icon: '◉', adminOnly: true},
+  {to: '/admins', label: 'Admins', icon: '◆', adminOnly: true},
 ];
 
 const linkStyle = (active: boolean): React.CSSProperties => ({
@@ -22,7 +22,9 @@ const linkStyle = (active: boolean): React.CSSProperties => ({
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const {logout} = useAuth();
+  const {logout, isAdmin} = useAuth();
+
+  const NAV = NAV_ALL.filter(item => !item.adminOnly || isAdmin);
 
   function handleLogout() {
     logout();

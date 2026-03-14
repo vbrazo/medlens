@@ -6,6 +6,8 @@ interface PatientModalProps {
   patient: PatientSummary | null;
   /** Role pre-selected when creating a new user (default: 'patient'). */
   defaultRole?: 'patient' | 'admin';
+  /** Label used in the modal title and submit button, e.g. 'Patient' or 'Admin'. */
+  entityLabel?: string;
   loading?: boolean;
   error?: string;
   onClose: () => void;
@@ -15,6 +17,7 @@ interface PatientModalProps {
 export default function PatientModal({
   patient,
   defaultRole = 'patient',
+  entityLabel = 'Patient',
   loading = false,
   error,
   onClose,
@@ -57,7 +60,7 @@ export default function PatientModal({
       <div style={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal>
         {/* Header */}
         <div style={styles.header}>
-          <h3 style={styles.title}>{isEdit ? 'Edit Patient' : 'Add Patient'}</h3>
+          <h3 style={styles.title}>{isEdit ? `Edit ${entityLabel}` : `Add ${entityLabel}`}</h3>
           <button onClick={onClose} style={styles.closeBtn} aria-label="Close">
             ✕
           </button>
@@ -122,7 +125,7 @@ export default function PatientModal({
               Cancel
             </button>
             <button type="submit" disabled={loading} style={styles.submitBtn(loading)}>
-              {loading ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Patient'}
+              {loading ? 'Saving…' : isEdit ? 'Save Changes' : `Create ${entityLabel}`}
             </button>
           </div>
         </form>

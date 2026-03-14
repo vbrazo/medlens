@@ -1,13 +1,13 @@
 import {FormEvent, useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {api} from '../api/client';
-import {useAuth} from '../hooks/useAuth';
+import {useAuth, type UserRole} from '../hooks/useAuth';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const {login} = useAuth();
+  const {login, setRole} = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,12 +21,21 @@ export default function LoginPage() {
 
     try {
       if (USE_MOCK) {
-        // In mock mode: accept any non-empty credentials
+        // In mock mode: accept any non-empty credentials; derive role from email
         await new Promise(r => setTimeout(r, 400));
-        login('mock-token');
+        const role: UserRole = email.toLowerCase().includes('admin') ? 'admin' : 'patient';
+        login('mock-token', role);
       } else {
         const {access_token} = await api.auth.login(email, password);
-        login(access_token);
+        // Store token first so the /users/me request is authenticated
+        login(access_token, 'patient');
+        // Fetch the current user to get their actual role
+        try {
+          const me = await api.users.me();
+          setRole(me.role as UserRole);
+        } catch {
+          // If /users/me fails we keep the default role; non-critical
+        }
       }
       navigate('/overview', {replace: true});
     } catch {

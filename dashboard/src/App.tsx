@@ -1,4 +1,5 @@
 import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
+import AdminRoute from './components/AdminRoute';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminsPage from './pages/AdminsPage';
@@ -21,9 +22,12 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<Navigate to="/overview" replace />} />
             <Route path="overview" element={<OverviewPage />} />
-            <Route path="patients" element={<PatientsPage />} />
-            <Route path="patients/:id" element={<PatientDetailPage />} />
-            <Route path="admins" element={<AdminsPage />} />
+            {/* Admin-only: patients list, patient detail, admins */}
+            <Route element={<AdminRoute />}>
+              <Route path="patients" element={<PatientsPage />} />
+              <Route path="patients/:id" element={<PatientDetailPage />} />
+              <Route path="admins" element={<AdminsPage />} />
+            </Route>
           </Route>
         </Route>
 

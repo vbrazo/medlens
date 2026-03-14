@@ -188,6 +188,7 @@ export default function AdminsPage() {
         <PatientModal
           patient={editing}
           defaultRole="admin"
+          entityLabel="Admin"
           loading={mutationLoading}
           error={modalError}
           onClose={() => setModalOpen(false)}
