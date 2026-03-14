@@ -8,8 +8,10 @@ import type {
 
 const BASE = import.meta.env.VITE_API_URL ?? '/api';
 
+const TOKEN_KEY = 'medlens_token';
+
 function token() {
-  return localStorage.getItem('token');
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
@@ -22,6 +24,13 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
   });
+
+  // Session expired or token revoked — clear storage and redirect to login
+  if (res.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    window.location.replace('/login');
+  }
+
   if (!res.ok) {
     throw new Error(`${res.status} ${await res.text()}`);
   }

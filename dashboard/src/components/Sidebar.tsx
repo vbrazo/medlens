@@ -1,4 +1,5 @@
-import {NavLink} from 'react-router-dom';
+import {NavLink, useNavigate} from 'react-router-dom';
+import {useAuth} from '../hooks/useAuth';
 
 const NAV = [
   {to: '/overview', label: 'Overview', icon: '◈'},
@@ -19,6 +20,14 @@ const linkStyle = (active: boolean): React.CSSProperties => ({
 });
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+  const {logout} = useAuth();
+
+  function handleLogout() {
+    logout();
+    navigate('/login', {replace: true});
+  }
+
   return (
     <aside
       style={{
@@ -56,10 +65,30 @@ export default function Sidebar() {
           marginTop: 'auto',
           padding: '14px',
           borderTop: '1px solid var(--border)',
-          color: 'var(--text-muted)',
-          fontSize: 12,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
         }}>
-        v0.1.0
+        <button
+          onClick={handleLogout}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 10px',
+            borderRadius: 8,
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            color: 'var(--text-secondary)',
+            fontSize: 13,
+            cursor: 'pointer',
+            width: '100%',
+            transition: 'background 0.15s, color 0.15s',
+          }}>
+          <span style={{fontSize: 14}}>⎋</span>
+          Sign out
+        </button>
+        <span style={{color: 'var(--text-muted)', fontSize: 11}}>v0.1.0</span>
       </div>
     </aside>
   );
